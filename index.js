@@ -53,12 +53,35 @@ async function main(rawPath, body)
 
     for (let path of pathList)
     {
+        let realPath = path;
+        let sections = [];
+        let pos = path.lastIndexOf("#L");
+
+        if (pos !== -1)
+        {
+            let chars = betweens(path.substr(pos + 1), "L");
+            if (chars.length === 2 && chars[0].substr(-1) === "-")
+                chars[0] = chars[0].substr(0, chars.length - 1);
+            
+            sections = chars.map(str => Number(str));
+            --sections[0];
+
+            realPath = path.substr(0, pos);
+        }
+
         let content = path.indexOf("://") !== -1
-            ? await download(path)
-            : await read(PathUtil.isAbsolute(path) ? path : rawPath + "/" + path);
+            ? await download(realPath)
+            : await read(PathUtil.isAbsolute(realPath) ? realPath : rawPath + "/" + realPath);
         if (content === null)
             continue;
 
+        if (sections.length)
+        {
+            let lines = content.split("\r\n").join("\n").split("\n");
+            lines = lines.slice(...sections);
+
+            content = lines.join("\n");
+        }
         body = body.replace(OPENER + path + CLOSER, content);
     }
     return body;

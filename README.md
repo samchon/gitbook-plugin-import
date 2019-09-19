@@ -16,6 +16,12 @@ Write `<!-- @import("path") -->` down to markdown file.
 
 ```md
 # My Content
-## Detail
+## External Content
 <!-- @import("internal/detail.md") -->
+
+## Remote Content
+<!-- @import("https://raw.githubusercontent.com/samchon/tstl/master/src/container/TreeMap.ts") -->
+
+## Partial Content
+<!-- @import("internal/story.md#L7-L24") -->
 ```
