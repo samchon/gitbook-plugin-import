@@ -1,3 +1,4 @@
+const fetch = require("node-fetch");
 const FileSystem = require("fs");
 const PathUtil = require("path");
 
@@ -29,6 +30,19 @@ function read(path)
     });
 }
 
+async function download(url)
+{
+    try
+    {
+        let response = await fetch(url, { method: "GET" });
+        return await response.text();
+    }
+    catch
+    {
+        return null;
+    }
+}
+
 async function main(rawPath, body)
 {
     const OPENER = '<!-- @import("';
@@ -39,11 +53,9 @@ async function main(rawPath, body)
 
     for (let path of pathList)
     {
-        let realPath = PathUtil.isAbsolute(path)
-            ? path
-            : rawPath + "/" + path;
-        
-        let content = await read(realPath);
+        let content = path.indexOf("://") !== -1
+            ? await download(path)
+            : await read(PathUtil.isAbsolute(path) ? path : rawPath + "/" + path);
         if (content === null)
             continue;
 
