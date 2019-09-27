@@ -43,7 +43,7 @@ async function download(url)
     }
 }
 
-async function main(rawPath, body)
+async function importFiles(rawPath, body)
 {
     const OPENER = '<!-- @import("';
     const CLOSER = '") -->';
@@ -87,11 +87,37 @@ async function main(rawPath, body)
     return body;
 }
 
+function replaceTemplates(ret)
+{
+    const OPENER = "<!-- @templates(";
+    const CLOSER = ") -->";
+
+    let jsonList = betweens(ret, OPENER, CLOSER);
+    for (let json of jsonList)
+        try
+        {
+            let templates = JSON.parse(json);
+            console.log(templates);
+
+            for (let tuple of templates)
+            {
+                let from = `\${{ ${tuple[0]} }}`;
+                let to = tuple[1];
+
+                ret = ret.split(from).join(to);
+            }
+        }
+        catch {}
+    return ret;
+}
+
 module.exports = {
     hooks: {
-        "page:before": async function (page)
+        "page:before": async page =>
         {
-            page.content = await main(page.rawPath, page.content);
+            page.content = await importFiles(page.rawPath, page.content);
+            page.content = replaceTemplates(page.content);
+            
             return page;
         }
     }
