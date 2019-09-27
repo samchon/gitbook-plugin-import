@@ -115,6 +115,7 @@ module.exports = {
     hooks: {
         "page:before": async page =>
         {
+            page.content = replaceTemplates(page.content);
             page.content = await importFiles(page.rawPath, page.content);
             page.content = replaceTemplates(page.content);
             
